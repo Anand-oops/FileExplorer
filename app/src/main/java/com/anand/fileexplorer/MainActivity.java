@@ -1,18 +1,11 @@
 package com.anand.fileexplorer;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,8 +13,17 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,13 +59,19 @@ public class MainActivity extends AppCompatActivity {
         actionButton = findViewById(R.id.action_button);
         fileRecyclerList.setLayoutManager(new LinearLayoutManager(this));
 
-        if(!(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))){
+        if (!(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))) {
             textView.setVisibility(View.VISIBLE);
-            ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.READ_EXTERNAL_STORAGE , Manifest.permission.WRITE_EXTERNAL_STORAGE} , 1);
-        }else{
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        } else {
             textView.setVisibility(View.GONE);
             viewDirectories(mRootPath);
         }
+
+        LinearLayout linearLayout = findViewById(R.id.layout);
+        AnimationDrawable animationDrawable = (AnimationDrawable) linearLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable.setExitFadeDuration(4000);
+        animationDrawable.start();
 
     }
 
@@ -131,58 +139,56 @@ public class MainActivity extends AppCompatActivity {
                 final FileItem currentItem = fileItemArrayList.get(position);
                 if (!currentItem.isFolder()) {
                     final File currentFile = new File(currentItem.getFilePath());
-                    AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-                    dialog.setMessage("What do you want to do with this file? ");
-                    dialog.setTitle("Select...");
+                    final CharSequence[] array = {"Copy", "Move", "Delete"};
+                    final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                    dialog.setTitle("Select your action...");
                     dialog.setIcon(R.drawable.ic_file);
-                    dialog.setPositiveButton("Copy",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog1, int which) {
-                                    final String inputFile = currentFile.getPath();
-                                    final String inputFileName = currentFile.getName();
-                                    actionButton.setVisibility(View.VISIBLE);
+                    final CharSequence[] action = new CharSequence[1];
+                    dialog.setSingleChoiceItems(array, -1, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            action[0] = array[i];
+                        }
+                    });
+                    dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            final String inputFile = currentFile.getPath();
+                            final String inputFileName = currentFile.getName();
+                            Log.i(TAG, "onClick: action " + action[0]);
+                            switch (action[0].toString()) {
+                                case "Copy":
                                     actionButton.setText("Paste here");
                                     viewDirectories(mRootPath);
+                                    actionButton.setVisibility(View.VISIBLE);
                                     actionButton.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
-
                                             copyFile(inputFile, inputFileName, outputPath);
                                         }
                                     });
-
-                                }
-                            });
-                    dialog.setNeutralButton("Delete",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    currentFile.delete();
-                                    viewDirectories(pRootPath);
-                                }
-                            });
-                    dialog.setNegativeButton("Move",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    final String inputFile = currentFile.getPath();
-                                    final String inputFileName = currentFile.getName();
-                                    actionButton.setVisibility(View.VISIBLE);
+                                    break;
+                                case "Move":
                                     actionButton.setText("Move here");
-                                    Log.i(TAG, "onClick: output " + pRootPath);
                                     viewDirectories(mRootPath);
+                                    actionButton.setVisibility(View.VISIBLE);
                                     actionButton.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
                                             moveFile(inputFile, inputFileName, outputPath);
                                         }
                                     });
-
-                                }
-                            });
+                                    break;
+                                case "Delete":
+                                    currentFile.delete();
+                                    viewDirectories(pRootPath);
+                                    break;
+                            }
+                        }
+                    });
                     AlertDialog alertDialog = dialog.create();
                     alertDialog.show();
+
                 }
             }
         });

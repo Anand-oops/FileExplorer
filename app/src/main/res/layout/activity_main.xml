@@ -2,9 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:id="@+id/layout"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="@android:color/black"
+    android:background="@drawable/gradient_list"
     android:orientation="vertical">
 
     <TextView
@@ -17,13 +18,13 @@
         android:textColor="@android:color/holo_purple"
         android:visibility="gone"/>
     <Button
-        android:layout_marginTop="8dp"
+        android:layout_margin="8dp"
         android:id="@+id/action_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="Paste here"
         android:layout_gravity="center"
-        android:background="@android:color/holo_purple"
+        android:background="@color/colorPrimary"
         android:textColor="@android:color/black"
         android:textSize="18sp"
         android:visibility="gone"/>

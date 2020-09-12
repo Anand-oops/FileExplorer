@@ -51,7 +51,29 @@ public class FileViewAdapter extends RecyclerView.Adapter<FileViewAdapter.FileVi
         holder.mTextView.setText(currentItem.getName());
         if (currentItem.isFolder()) {
             holder.mImageView.setImageResource(R.drawable.ic_folder);
-        } else holder.mImageView.setImageResource(R.drawable.ic_file);
+        } else holder.mImageView.setImageResource(getImage(currentItem.getFilePath()));
+    }
+
+    private int getImage(String filePath) {
+        if (filePath.contains(".jpg"))
+            return R.drawable.ic_jpg;
+        else if (filePath.contains(".jpeg"))
+            return R.drawable.ic_jpg;
+        else if (filePath.contains(".doc"))
+            return R.drawable.ic_doc;
+        else if (filePath.contains(".mp3"))
+            return R.drawable.ic_mp3;
+        else if (filePath.contains(".mp4"))
+            return R.drawable.ic_mp4;
+        else if (filePath.contains(".pdf"))
+            return R.drawable.ic_pdf;
+        else if (filePath.contains(".png"))
+            return R.drawable.ic_png;
+        else if (filePath.contains(".ppt"))
+            return R.drawable.ic_ppt;
+        else if (filePath.contains(".xls"))
+            return R.drawable.ic_xls;
+        else return R.drawable.ic_file;
     }
 
     @Override
