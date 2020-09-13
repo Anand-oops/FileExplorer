@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     FileViewAdapter fileAdapter;
     private boolean isRoot = true;
     TextView textView;
-    Button actionButton;
+    Button actionButton, cancelButton;
+    LinearLayout buttonsLayout;
     private File root;
     private String mRootPath = Environment.getExternalStorageDirectory().getPath();
     String outputPath;
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.permissionText);
         actionButton = findViewById(R.id.action_button);
         fileRecyclerList.setLayoutManager(new LinearLayoutManager(this));
+        buttonsLayout = findViewById(R.id.buttons);
+        cancelButton = findViewById(R.id.cancel_button);
 
         if (!(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))) {
             textView.setVisibility(View.VISIBLE);
@@ -77,17 +80,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode ==1){
-            if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 textView.setVisibility(View.GONE);
                 viewDirectories(mRootPath);
-            }else
-                Toast.makeText(this,"Now you shall give permissions manually",Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(this, "Now you shall give permissions manually", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public boolean checkPermission(String permission)
-    {
+    public boolean checkPermission(String permission) {
         int check = ContextCompat.checkSelfPermission(this, permission);
         return (check == PackageManager.PERMISSION_GRANTED);
     }
@@ -117,18 +119,20 @@ public class MainActivity extends AppCompatActivity {
                 if (currentItem.isFolder())
                     viewDirectories(currentItem.getFilePath());
                 else {
-                    File currentFile = new File(currentItem.getFilePath());
-                    Log.i(TAG, "OnItemClick: file " + currentFile.getAbsolutePath());
-                    Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".provider", currentFile);
-                    String mime = getType(uri.toString());
-                    try {
-                        Intent intent = new Intent();
-                        intent.setAction(Intent.ACTION_VIEW);
-                        intent.setDataAndType(uri, mime);
-                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                    if (buttonsLayout.getVisibility() == View.GONE) {
+                        File currentFile = new File(currentItem.getFilePath());
+                        Log.i(TAG, "OnItemClick: file " + currentFile.getAbsolutePath());
+                        Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".provider", currentFile);
+                        String mime = getType(uri.toString());
+                        try {
+                            Intent intent = new Intent();
+                            intent.setAction(Intent.ACTION_VIEW);
+                            intent.setDataAndType(uri, mime);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             }
@@ -160,22 +164,36 @@ public class MainActivity extends AppCompatActivity {
                                 case "Copy":
                                     actionButton.setText("Paste here");
                                     viewDirectories(mRootPath);
-                                    actionButton.setVisibility(View.VISIBLE);
+                                    buttonsLayout.setVisibility(View.VISIBLE);
                                     actionButton.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
                                             copyFile(inputFile, inputFileName, outputPath);
                                         }
                                     });
+                                    cancelButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            buttonsLayout.setVisibility(View.GONE);
+                                            viewDirectories(currentFile.getParent());
+                                        }
+                                    });
                                     break;
                                 case "Move":
                                     actionButton.setText("Move here");
                                     viewDirectories(mRootPath);
-                                    actionButton.setVisibility(View.VISIBLE);
+                                    buttonsLayout.setVisibility(View.VISIBLE);
                                     actionButton.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
                                             moveFile(inputFile, inputFileName, outputPath);
+                                        }
+                                    });
+                                    cancelButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            buttonsLayout.setVisibility(View.GONE);
+                                            viewDirectories(currentFile.getParent());
                                         }
                                     });
                                     break;
@@ -219,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("tag", Objects.requireNonNull(e.getMessage()));
         }
-        actionButton.setVisibility(View.GONE);
+        buttonsLayout.setVisibility(View.GONE);
         viewDirectories(pRootPath);
     }
 
@@ -246,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("tag", Objects.requireNonNull(e.getMessage()));
         }
-        actionButton.setVisibility(View.GONE);
+        buttonsLayout.setVisibility(View.GONE);
         viewDirectories(pRootPath);
     }
 

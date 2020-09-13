@@ -4,10 +4,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -47,6 +49,11 @@ public class FileViewAdapter extends RecyclerView.Adapter<FileViewAdapter.FileVi
 
     @Override
     public void onBindViewHolder(@NonNull FileViewAdapter.FileViewHolder holder, int position) {
+
+        holder.mImageView.setAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_transition_animation));
+
+        holder.adapterCard.setAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_scale_animation));
+
         final FileItem currentItem = fileItemArrayList.get(position);
         holder.mTextView.setText(currentItem.getName());
         if (currentItem.isFolder()) {
@@ -82,6 +89,7 @@ public class FileViewAdapter extends RecyclerView.Adapter<FileViewAdapter.FileVi
     }
 
     public class FileViewHolder extends RecyclerView.ViewHolder {
+        private CardView adapterCard;
         private TextView mTextView;
         private ImageView mImageView;
 
@@ -89,6 +97,7 @@ public class FileViewAdapter extends RecyclerView.Adapter<FileViewAdapter.FileVi
             super(itemView);
             mTextView = itemView.findViewById(R.id.text);
             mImageView = itemView.findViewById(R.id.image);
+            adapterCard = itemView.findViewById(R.id.card_layout);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
